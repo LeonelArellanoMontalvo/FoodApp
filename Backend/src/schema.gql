@@ -1,0 +1,212 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Rol {
+  id: Int!
+  nombre: String!
+  estado: String!
+  usuarios: [Usuario!]
+}
+
+type Usuario {
+  cedula: String!
+  nombre: String!
+  email: String!
+  direccionPrincipal: String!
+  apellido: String
+  telefono: String
+  estado: String!
+  rol: Rol!
+}
+
+type LoginResponse {
+  access_token: String!
+  user: Usuario!
+}
+
+type Auditoria {
+  id: Int!
+  usuarioCedula: String!
+  tipoAccion: String!
+  nombreTabla: String!
+  registroId: String!
+  fechaHora: DateTime!
+  datosAnteriores: JSON
+  datosNuevos: JSON
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+type Platillo {
+  id: Int!
+  categoriaNombre: String!
+  nombreItem: String!
+  descripcion: String
+  precio: Float!
+  disponible: Boolean!
+  estado: String!
+}
+
+type DetallePedido {
+  id: Int!
+  pedidoId: Int!
+  itemId: Int!
+  cantidad: Int!
+  precioUnitario: Float!
+  subtotal: Float!
+  notasAdicionales: String
+  estado: String!
+  pedido: Pedido!
+  platillo: Platillo!
+}
+
+type Pedido {
+  id: Int!
+  usuarioCedula: String!
+  fechaPedido: DateTime!
+  estadoPedido: String!
+  tipoEntrega: String!
+  direccionEntrega: String!
+  montoTotal: Float!
+  estado: String!
+  usuario: Usuario!
+  detalles: [DetallePedido!]!
+}
+
+type Query {
+  usuariosPorRol(rolId: Int!): [Usuario!]!
+  usuarios: [Usuario!]!
+  auditorias: [Auditoria!]!
+  platillos: [Platillo!]!
+  platillo(id: Int!): Platillo!
+  roles: [Rol!]!
+  rol(id: Int!): Rol!
+  pedidos: [Pedido!]!
+  pedido(id: Int!): Pedido!
+  detallesPedido: [DetallePedido!]!
+  detallePedido(id: Int!): DetallePedido!
+}
+
+type Mutation {
+  login(loginInput: LoginInput!): LoginResponse!
+  register(createUsuarioInput: CreateUsuarioInput!): Usuario!
+  cambiarEstadoUsuario(cedula: String!, nuevoEstado: String!): Usuario!
+  createPlatillo(createPlatilloInput: CreatePlatilloInput!): Platillo!
+  updatePlatillo(updatePlatilloInput: UpdatePlatilloInput!): Platillo!
+  removePlatillo(id: Int!): Platillo!
+  createRol(createRolInput: CreateRolInput!): Rol!
+  updateRol(updateRolInput: UpdateRolInput!): Rol!
+  removeRol(id: Int!): Rol!
+  createPedido(createPedidoInput: CreatePedidoInput!): Pedido!
+  updatePedido(updatePedidoInput: UpdatePedidoInput!): Pedido!
+  removePedido(id: Int!): Pedido!
+  createDetallePedido(createDetallePedidoInput: CreateDetallePedidoInput!): DetallePedido!
+  updateDetallePedido(updateDetallePedidoInput: UpdateDetallePedidoInput!): DetallePedido!
+  removeDetallePedido(id: Int!): DetallePedido!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input CreateUsuarioInput {
+  cedula: String!
+  nombre: String!
+  email: String!
+  password: String!
+  direccionPrincipal: String!
+  apellido: String
+  telefono: String
+  rolId: Int!
+}
+
+input CreatePlatilloInput {
+  categoriaNombre: String!
+  nombreItem: String!
+  descripcion: String
+  precio: Float!
+  disponible: Boolean
+  estado: String
+}
+
+input UpdatePlatilloInput {
+  categoriaNombre: String
+  nombreItem: String
+  descripcion: String
+  precio: Float
+  disponible: Boolean
+  estado: String
+  id: Int!
+}
+
+input CreateRolInput {
+  nombre: String!
+  estado: String
+}
+
+input UpdateRolInput {
+  nombre: String
+  estado: String
+  id: Int!
+}
+
+input CreatePedidoInput {
+  usuarioCedula: String!
+  tipoEntrega: String!
+  direccionEntrega: String!
+  montoTotal: Float!
+  estadoPedido: String
+  estado: String
+  detalles: [PedidoDetalleItemInput!]!
+}
+
+input PedidoDetalleItemInput {
+  itemId: Int!
+  cantidad: Int!
+  precioUnitario: Float!
+  subtotal: Float!
+  notasAdicionales: String
+}
+
+input UpdatePedidoInput {
+  usuarioCedula: String
+  tipoEntrega: String
+  direccionEntrega: String
+  montoTotal: Float
+  estadoPedido: String
+  estado: String
+  detalles: [PedidoDetalleItemInput!]
+  id: Int!
+  fechaPedido: DateTime
+}
+
+input CreateDetallePedidoInput {
+  pedidoId: Int!
+  itemId: Int!
+  cantidad: Int!
+  precioUnitario: Float!
+  subtotal: Float!
+  notasAdicionales: String
+  estado: String
+}
+
+input UpdateDetallePedidoInput {
+  pedidoId: Int
+  itemId: Int
+  cantidad: Int
+  precioUnitario: Float
+  subtotal: Float
+  notasAdicionales: String
+  estado: String
+  id: Int!
+}

@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Roles
+model Rol {
+  id        Int       @id @default(autoincrement()) @map("rol_id")
+  nombre    String    @unique @map("nombre_rol") @db.VarChar(50)
+  estado    String    @default("ACTIVO") @db.VarChar(20)
+  
+  usuarios  Usuario[]
+
+  @@map("roles")
+}
+
+// 2. Usuarios (PK es Cédula String)
+model Usuario {
+  cedula            String    @id @db.VarChar(10) // La cédula es la clave primaria
+  rolId             Int       @map("rol_id")
+  nombre            String    @db.VarChar(100)
+  apellido          String?   @db.VarChar(100)
+  telefono          String?   @unique @db.VarChar(15)
+  email             String    @unique @db.VarChar(100)
+  direccionPrincipal String   @map("direccion_principal") @db.Text
+  contrasenaHash    String    @map("contrasena_hash") @db.VarChar(255)
+  estado            String    @default("ACTIVO") @db.VarChar(20)
+
+  rol               Rol       @relation(fields: [rolId], references: [id])
+  pedidos           Pedido[]
+  auditorias        Auditoria[]
+  @@map("usuarios")
+}
+
+// 3. Platillos (Antes Items_Menu, ahora con categoría como texto)
+model Platillo {
+  id               Int      @id @default(autoincrement()) @map("item_id")
+  categoriaNombre  String   @map("categoria_nombre") @db.VarChar(100) // Campo directo
+  nombreItem       String   @map("nombre_item") @db.VarChar(150)
+  descripcion      String?  @db.Text
+  precio           Decimal  @db.Decimal(10, 2)
+  disponible       Boolean  @default(true)
+  estado           String   @default("ACTIVO") @db.VarChar(20)
+  
+  detallesPedido   DetallePedido[]
+
+  @@map("platillos")
+}
+
+// 4. Pedidos
+model Pedido {
+  id              Int      @id @default(autoincrement()) @map("pedido_id")
+  usuarioCedula   String   @map("usuario_cedula") @db.VarChar(10) // FK es String
+  fechaPedido     DateTime @default(now()) @map("fecha_pedido") @db.Timestamptz
+  estadoPedido    String   @default("Pendiente") @map("estado_pedido") @db.VarChar(50)
+  tipoEntrega     String   @map("tipo_entrega") @db.VarChar(50)
+  direccionEntrega String  @map("direccion_entrega") @db.Text
+  montoTotal      Decimal  @map("monto_total") @db.Decimal(10, 2)
+  estado          String   @default("ACTIVO") @db.VarChar(20)
+
+  usuario         Usuario  @relation(fields: [usuarioCedula], references: [cedula])
+  detalles        DetallePedido[]
+
+  @@map("pedidos")
+}
+
+// 5. Detalles Pedido
+model DetallePedido {
+  id              Int      @id @default(autoincrement()) @map("detalle_id")
+  pedidoId        Int      @map("pedido_id")
+  itemId          Int      @map("item_id")
+  cantidad        Int
+  precioUnitario  Decimal  @map("precio_unitario") @db.Decimal(10, 2)
+  subtotal        Decimal  @db.Decimal(10, 2)
+  notasAdicionales String? @map("notas_adicionales") @db.Text
+  estado          String   @default("ACTIVO") @db.VarChar(20)
+
+  pedido          Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  platillo        Platillo @relation(fields: [itemId], references: [id])
+
+  @@map("detalles_pedido")
+}
+// 6. Auditoria (Registro de cambios)
+model Auditoria {
+  id              Int      @id @default(autoincrement()) @map("auditoria_id")
+  usuarioCedula   String   @map("usuario_cedula") @db.VarChar(10)
+  fechaHora       DateTime @default(now()) @map("fecha_hora") @db.Timestamptz
+  tipoAccion      String   @map("tipo_accion") @db.VarChar(50)
+  nombreTabla     String   @map("nombre_tabla") @db.VarChar(100)
+  registroId      String   @map("registro_id") @db.Text  // TEXT para flexibilidad
+  datosAnteriores Json?    @map("datos_anteriores")  // JSONB como Json opcional
+  datosNuevos     Json?    @map("datos_nuevos")      // JSONB como Json opcional
+
+
+  usuario         Usuario  @relation(fields: [usuarioCedula], references: [cedula])
+
+  @@map("auditoria")
+}
